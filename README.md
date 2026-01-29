@@ -26,6 +26,9 @@ This project focuses on learning real-world backend development concepts using D
 
 ---
 
+
+![image alt](https://github.com/aniketg18/studybuddy-djanago_project/blob/7ec34a7210dd581545b80c0fc7d468ef4497aeda/chat.png)
+
 ## 🛠️ Tech Stack
 - Python
 - Django
