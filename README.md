@@ -26,7 +26,6 @@ This project focuses on learning real-world backend development concepts using D
 - Helps students collaborate, clarify doubts, and share study resources
 - Implemented using ASGI-compatible setup
 
----
 
 ![image alt](https://github.com/aniketg18/studybuddy-djanago_project/blob/7ec34a7210dd581545b80c0fc7d468ef4497aeda/chat.png)
 
@@ -38,7 +37,6 @@ This project focuses on learning real-world backend development concepts using D
 - Profiles can be found by others or used to discover compatible study partners
 - Location-based & interest-based matching for easier connection
 
----
 
 ![image alt](https://github.com/aniketg18/studybuddy-djanago_project/blob/20151308c9c9f03494711c78328c251a86cb63dd/user%20profile.png)
 
@@ -50,7 +48,6 @@ This project focuses on learning real-world backend development concepts using D
 - Helps find mutual-interest partners quickly
 - Connect directly with compatible users
 
----
 
 ![image alt](https://github.com/aniketg18/studybuddy-djanago_project/blob/20151308c9c9f03494711c78328c251a86cb63dd/discover%20page.png)
 
@@ -63,7 +60,6 @@ This project focuses on learning real-world backend development concepts using D
 - ⚡ Quick Access – chat & discover features right from home
 - Boosts productivity & organization
 
----
 
 ![image alt](https://github.com/aniketg18/studybuddy-djanago_project/blob/20151308c9c9f03494711c78328c251a86cb63dd/homepage.png)
 
