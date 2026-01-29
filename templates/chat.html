@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block messages %}{% endblock %}   {# disable messages here only #}
+
+{% block content %}
+<div class="max-w-3xl mx-auto mt-6 bg-white p-4 rounded shadow">
+    <div class="flex items-center justify-between border-b pb-2 mb-4">
+        <h2 class="text-xl font-semibold">Chat with {{ friend.username }}</h2>
+        <a href="{% url 'view_user_profile' friend.id %}" class="text-sm text-gray-500">View profile</a>
+    </div>
+
+    <div id="chat-window" class="h-96 overflow-auto border rounded p-3 mb-3 bg-gray-50">
+        <div id="chat-log">
+            <!-- WebSocket will handle all chat messages dynamically -->
+            <p class="text-gray-500" id="no-messages">No messages yet. Say hi 👋</p>
+        </div>
+    </div>
+
+    <form id="chat-form" class="flex gap-2" onsubmit="return false;">
+        <input id="message-input" type="text" placeholder="Type a message..." autocomplete="off"
+               class="flex-grow px-4 py-2 border rounded">
+        <button id="send-btn" class="px-4 py-2 bg-indigo-500 text-white rounded">Send</button>
+    </form>
+</div>
+
+<script>
+(function() {
+    const userId = {{ user.id }};
+    const friendId = {{ friend.id }};
+    const roomName = Math.min(userId, friendId) + '_' + Math.max(userId, friendId);
+
+    const chatLog = document.getElementById('chat-log');
+    const chatWindow = document.getElementById('chat-window');
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const wsUrl = protocol + '://' + window.location.host + '/ws/chat/' + roomName + '/';
+    const chatSocket = new WebSocket(wsUrl);
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        appendMessage(data.message, data.sender_id, data.timestamp || '');
+    };
+
+    // Function to format timestamp to local date + time
+    function formatTimestamp(ts) {
+        if (!ts) return '';
+        const date = new Date(ts);
+        return date.toLocaleString(); // e.g., 09/09/2025, 18:22:15
+    }
+
+    function appendMessage(message, sender_id, timestamp) {
+        const noMsg = document.getElementById('no-messages');
+        if (noMsg) noMsg.remove();
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'mb-2 ' + (sender_id === userId ? 'text-right' : 'text-left');
+
+        const bubble = document.createElement('div');
+        bubble.className = (sender_id === userId ? 'inline-block bg-indigo-100 rounded px-3 py-1' : 'inline-block bg-gray-200 rounded px-3 py-1');
+
+        const who = document.createElement('small');
+        who.className = 'block text-xs text-gray-500';
+        who.textContent = (sender_id === userId ? 'You' : '{{ friend.username }}');
+
+        const text = document.createElement('div');
+        text.className = 'whitespace-pre-wrap';
+        text.textContent = message;
+
+        const time = document.createElement('small');
+        time.className = 'block text-xs text-gray-400 mt-1';
+        time.textContent = formatTimestamp(timestamp); // Use formatted date + time
+
+        bubble.appendChild(who);
+        bubble.appendChild(text);
+        bubble.appendChild(time);
+        wrapper.appendChild(bubble);
+        chatLog.appendChild(wrapper);
+
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    function sendMessage() {
+        const message = messageInput.value.trim();
+        if (!message) return;
+        chatSocket.send(JSON.stringify({ 'message': message }));
+        messageInput.value = '';
+    }
+
+    sendBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        sendMessage();
+    });
+
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,78 @@
+<div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-md">
+    <h3 class="text-2xl font-bold mb-4">📝 Your Notes</h3>
+
+    <!-- Add Note Form -->
+    <form id="add-note-form" class="flex mb-4">
+        <input type="text" id="new-note" name="content" placeholder="Add a new note"
+               class="flex-grow px-4 py-2 border rounded-l focus:outline-none focus:ring-2 focus:ring-yellow-400">
+        <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-r hover:bg-yellow-600">Add</button>
+    </form>
+
+    <!-- Notes list -->
+    <ul id="note-list" class="space-y-2">
+        {% for note in notes %}
+        <li class="flex items-center justify-between bg-gray-50 px-4 py-2 rounded shadow-sm" data-id="{{ note.id }}">
+            <span>{{ note.content }}</span>
+            <button class="delete-note-btn text-red-500 hover:text-red-700">Delete</button>
+        </li>
+        {% empty %}
+        <li class="text-gray-500">No notes yet. Add something above!</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addForm = document.getElementById('add-note-form');
+    const noteList = document.getElementById('note-list');
+
+    // Add note instantly
+    addForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const contentInput = document.getElementById('new-note');
+        const content = contentInput.value.trim();
+        if (!content) return;
+
+        fetch('/api/add-note/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'content=' + encodeURIComponent(content)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.id) {
+                contentInput.value = '';
+                const li = document.createElement('li');
+                li.className = "flex items-center justify-between bg-gray-50 px-4 py-2 rounded shadow-sm";
+                li.dataset.id = data.id;
+                li.innerHTML = `
+                    <span>${data.content}</span>
+                    <button class="delete-note-btn text-red-500 hover:text-red-700">Delete</button>
+                `;
+                noteList.prepend(li);
+            }
+        });
+    });
+
+    // Delete note
+    noteList.addEventListener('click', function(e) {
+        const li = e.target.closest('li');
+        if (!li) return;
+        const noteId = li.dataset.id;
+
+        if (e.target.classList.contains('delete-note-btn')) {
+            fetch(`/api/delete-note/${noteId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            }).then(() => li.remove());
+        }
+    });
+});
+</script>

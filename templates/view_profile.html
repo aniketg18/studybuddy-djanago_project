@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-2xl font-bold mb-4">{{ other_user.username }}'s Profile</h2>
+    <p><strong>Email:</strong> {{ other_user.email }}</p>
+    <p><strong>Location:</strong> {{ profile.location }}</p>
+    <p><strong>Bio:</strong> {{ profile.bio }}</p>
+
+    <p><strong>Skills Known:</strong>
+        {% for skill in profile.skills_known.all %}
+            {{ skill.name }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+
+    <p><strong>Skills Wanted:</strong>
+        {% for skill in profile.skills_wanted.all %}
+            {{ skill.name }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+
+    {% if is_friend %}
+        <p class="text-green-600 mt-4">You are friends ✅</p>
+    {% else %}
+        <a href="{% url 'send_request' other_user.id %}" 
+           class="px-4 py-2 bg-green-500 text-white rounded mt-4 inline-block">
+           Send Connection Request
+        </a>
+    {% endif %}
+</div>
+{% endblock %}

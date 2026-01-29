@@ -1,0 +1,138 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>StudyBuddy</title>
+
+    <!-- Tailwind Play CDN: reliable, no build step -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- AOS for animations -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+
+    <!-- small custom CSS to ensure nice global backgrounds & prevent the main wrapper from being too restrictive -->
+    <style>
+      /* subtle global background that fills screen */
+      body { background: linear-gradient(180deg, #f8f2ff 0%, #fff6f7 40%, #eef6ff 100%); }
+      /* keep notifications container above everything */
+      #notification-container { z-index: 9999; }
+      /* small helper to allow inner pages to use full-width cards if needed */
+      .page-inner { background: transparent; box-shadow: none; padding: 0; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <header class="bg-gradient-to-r from-purple-600 to-blue-500 text-white shadow">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-extrabold flex items-center gap-3">
+        <span class="text-2xl">📚</span>
+        <span class="tracking-wide">StudyBuddy</span>
+      </h1>
+
+      <nav class="space-x-6 text-lg font-medium flex items-center">
+        <a href="{% url 'home' %}" class="hover:text-yellow-300 transition">Home</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'discover' %}" class="hover:text-yellow-300 transition">Discover</a>
+
+          <div class="relative inline-block">
+            <a href="{% url 'connection_requests' %}" class="relative">
+              <span class="text-xl">👤</span>
+              {% if pending_count > 0 %}
+                <span class="absolute -top-2 -right-3 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  {{ pending_count }}
+                </span>
+              {% endif %}
+            </a>
+          </div>
+
+          <a href="{% url 'profile' %}" class="hover:text-yellow-300 transition">Profile</a>
+          <a href="{% url 'logout' %}" class="hover:text-red-300 transition">Logout</a>
+        {% else %}
+          <a href="{% url 'login' %}" class="hover:text-green-300 transition">Login</a>
+          <a href="{% url 'register' %}" class="hover:text-blue-300 transition">Register</a>
+        {% endif %}
+      </nav>
+    </div>
+
+    <!-- Notification container (real-time popups will appear here) -->
+    <div id="notification-container" class="fixed top-5 right-5 z-50 space-y-2"></div>
+  </header>
+
+  <!-- Websocket notification script (kept as your logic) -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const userId = "{{ request.user.id }}";
+        if (!userId) return;
+
+        const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+        const notifSocket = new WebSocket(wsScheme + '://' + window.location.host + '/ws/notifications/' + userId + '/');
+
+        notifSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const container = document.getElementById("notification-container");
+
+            const div = document.createElement("div");
+            div.className = "bg-green-100 text-green-800 p-3 rounded shadow flex justify-between items-center";
+
+            const span = document.createElement("span");
+            span.textContent = `${data.sender}: ${data.message}`;
+            div.appendChild(span);
+
+            const btn = document.createElement("button");
+            btn.textContent = "Read";
+            btn.className = "ml-3 px-2 py-1 bg-red-500 text-white rounded";
+            btn.onclick = () => {
+                fetch(`/api/notifications/${data.id}/read/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    }
+                });
+                div.remove();
+            };
+            div.appendChild(btn);
+
+            container.appendChild(div);
+        };
+    });
+  </script>
+
+  <!-- Main content container (pages place their content inside this block) -->
+  <main class="flex-1 w-full">
+    <div class="max-w-7xl mx-auto w-full px-6 py-10">
+      {% block messages %}
+        {% if messages %}
+          <div class="mb-6">
+            {% for message in messages %}
+              <div class="p-4 mb-2 rounded-lg 
+                          {% if message.tags == 'success' %} bg-green-100 text-green-700 
+                          {% elif message.tags == 'error' %} bg-red-100 text-red-700 
+                          {% else %} bg-blue-100 text-blue-700 {% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endblock %}
+
+      <!-- IMPORTANT: keep block content here so child templates work unchanged -->
+      <div class="bg-white p-6 rounded-2xl shadow-lg">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-gradient-to-r from-purple-600 to-blue-500 text-white py-4 text-center mt-10 shadow-inner">
+    <p>© 2025 StudyBuddy 🚀 | Built with ❤️ for learners</p>
+  </footer>
+
+  <!-- AOS script (init) -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    AOS.init({ duration: 450, once: true });
+  </script>
+</body>
+</html>

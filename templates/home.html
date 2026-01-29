@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Animated Gradient Background -->
+<style>
+  .animated-bg {
+    background: linear-gradient(-45deg, #fbcfe8, #e0e7ff, #d1fae5, #bfdbfe);
+    background-size: 400% 400%;
+    animation: gradientBG 12s ease infinite;
+  }
+  @keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+</style>
+
+<!-- Background Wrapper -->
+<div class="min-h-[80vh] animated-bg py-8 px-6">
+
+    <!-- Welcome Message -->
+    <div class="bg-white/40 backdrop-blur-md shadow-lg rounded-2xl p-5 mb-8 text-center">
+        <h2 class="text-2xl font-bold text-gray-800">
+            Welcome, {{ user.username }} 👋
+        </h2>
+        <p class="text-gray-600 mt-1">Ready to be productive today?</p>
+    </div>
+
+    <!-- Gradient Divider -->
+    <div class="h-1 w-40 mx-auto mb-8 rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500"></div>
+
+    <!-- Dashboard Gradient Container -->
+    <div class="bg-gradient-to-r from-purple-50 via-pink-50 to-blue-50 rounded-3xl shadow-xl p-6 max-w-5xl mx-auto">
+
+        <!-- Dashboard Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Todo Card -->
+            <div class="bg-white/60 backdrop-blur-md shadow-lg rounded-xl p-6 hover:scale-105 transform transition">
+                <h3 class="text-xl font-bold text-indigo-600 mb-2">✅ Todo List</h3>
+                <p class="text-gray-600 mb-4">Organize and manage your daily tasks efficiently.</p>
+                <button id="todo-btn" class="w-full py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg hover:from-indigo-600 hover:to-purple-600 transition">
+                    Open Todo
+                </button>
+            </div>
+
+            <!-- Chat Card -->
+            <div class="bg-white/60 backdrop-blur-md shadow-lg rounded-xl p-6 hover:scale-105 transform transition">
+                <h3 class="text-xl font-bold text-pink-600 mb-2">💬 Chat</h3>
+                <p class="text-gray-600 mb-4">Stay connected and chat with your friends in real-time.</p>
+                <button id="chat-btn" class="w-full py-2 bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-lg hover:from-pink-600 hover:to-red-600 transition">
+                    Open Chat
+                </button>
+            </div>
+
+            <!-- Notes Card -->
+            <div class="bg-white/60 backdrop-blur-md shadow-lg rounded-xl p-6 hover:scale-105 transform transition">
+                <h3 class="text-xl font-bold text-green-600 mb-2">📝 Notes</h3>
+                <p class="text-gray-600 mb-4">Write, edit, and keep track of your personal notes securely.</p>
+                <button id="notes-btn" class="w-full py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition">
+                    Open Notes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sections -->
+    <div id="todo-section" class="mt-8 hidden">
+        {% include 'todos.html' %}
+    </div>
+
+    <div id="chat-section" class="mt-8 hidden">
+        {% include 'friends_list.html' %}
+    </div>
+
+    <div id="notes-section" class="mt-8 hidden">
+        {% include 'notes.html' %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const todoBtn = document.getElementById('todo-btn');
+    const chatBtn = document.getElementById('chat-btn');
+    const notesBtn = document.getElementById('notes-btn');
+
+    const todoSec = document.getElementById('todo-section');
+    const chatSec = document.getElementById('chat-section');
+    const notesSec = document.getElementById('notes-section');
+
+    todoBtn.onclick = () => { 
+        todoSec.classList.remove('hidden'); 
+        chatSec.classList.add('hidden'); 
+        notesSec.classList.add('hidden'); 
+    }
+    chatBtn.onclick = () => { 
+        chatSec.classList.remove('hidden'); 
+        todoSec.classList.add('hidden'); 
+        notesSec.classList.add('hidden'); 
+    }
+    notesBtn.onclick = () => { 
+        notesSec.classList.remove('hidden'); 
+        todoSec.classList.add('hidden'); 
+        chatSec.classList.add('hidden'); 
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<div class="flex justify-center items-center min-h-screen bg-gray-100">
+  <div class="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-8">
+    <h2 class="text-2xl font-bold mb-6">👤 Edit Profile</h2>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="p-3 mb-4 rounded {% if message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" class="space-y-6">
+      {% csrf_token %}
+
+      <!-- Username -->
+      <div>
+        <label class="block font-medium">Username</label>
+        <input type="text" name="username" value="{{ user.username }}" required
+               class="w-full px-3 py-2 border rounded">
+      </div>
+
+      <!-- Email -->
+      <div>
+        <label class="block font-medium">Email</label>
+        <input type="email" name="email" value="{{ user.email }}" 
+               class="w-full px-3 py-2 border rounded">
+      </div>
+
+      <!-- Bio -->
+      <div>
+        <label class="block font-medium">Bio</label>
+        <textarea name="bio" rows="3" class="w-full px-3 py-2 border rounded"
+                  placeholder="Write something about yourself...">{{ profile.bio }}</textarea>
+      </div>
+
+      <!-- Location -->
+      <div>
+        <label class="block font-medium">Location</label>
+        <input type="text" name="location" value="{{ profile.location }}"
+               class="w-full px-3 py-2 border rounded" placeholder="City, Country">
+      </div>
+
+<!-- Skills You Know -->
+<div>
+  <label class="block font-semibold mb-2">Skills You Know (comma separated)</label>
+  <input type="text" name="skills_known_text" value="{% for s in profile.skills_known.all %}{{ s.name }}{% if not forloop.last %}, {% endif %}{% endfor %}"
+         class="w-full px-3 py-2 border rounded" placeholder="e.g. Python, Django, SQL">
+</div>
+
+<!-- Skills You Want -->
+<div>
+  <label class="block font-semibold mb-2">Skills You Want (comma separated)</label>
+  <input type="text" name="skills_wanted_text" value="{% for s in profile.skills_wanted.all %}{{ s.name }}{% if not forloop.last %}, {% endif %}{% endfor %}"
+         class="w-full px-3 py-2 border rounded" placeholder="e.g. Machine Learning, React">
+</div>
+
+
+      <!-- Save Button -->
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded">
+        Save Changes
+      </button>
+    </form>
+
+    <div class="mt-6">
+      <a href="{% url 'change_password' %}" class="text-blue-600 underline">Change Password 🔑</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

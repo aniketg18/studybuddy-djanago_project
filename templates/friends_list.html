@@ -1,0 +1,23 @@
+<div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-md">
+    <h3 class="text-2xl font-bold mb-4">💬 Chat with Friends</h3>
+
+    {% if friends %}
+    <ul class="space-y-2">
+        {% for f in friends %}
+        <li class="flex justify-between items-center bg-gray-50 px-4 py-2 rounded shadow-sm hover:bg-gray-100">
+            {% if f.sender == user %}
+                <span class="font-medium">{{ f.receiver.username }}</span>
+                <a href="{% url 'chat_with_friend' f.receiver.id %}" 
+                   class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors">Chat</a>
+            {% else %}
+                <span class="font-medium">{{ f.sender.username }}</span>
+                <a href="{% url 'chat_with_friend' f.sender.id %}" 
+                   class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors">Chat</a>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-gray-500">You have no friends yet. Send connection requests to start chatting!</p>
+    {% endif %}
+</div>

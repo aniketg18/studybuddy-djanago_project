@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+{% block title %}Discover{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-indigo-100 p-8">
+
+  <!-- Notification popup (centered) -->
+  <div id="notification-popup" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+    <div class="bg-white border border-gray-200 rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
+      <h3 id="notif-title" class="text-lg font-semibold text-gray-800"></h3>
+      <p id="notif-message" class="mt-2 text-sm text-gray-600"></p>
+      <div class="mt-4">
+        <button id="notif-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Form -->
+  <form method="get" class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <input 
+      type="text" 
+      name="skill" 
+      placeholder="Skill to learn"
+      value="{{ skill }}" 
+      class="px-4 py-2 rounded-xl border border-gray-300 shadow"
+    >
+    
+    <input 
+      type="text" 
+      name="location" 
+      placeholder="Filter by Location"
+      value="{{ location }}" 
+      class="px-4 py-2 rounded-xl border border-gray-300 shadow"
+    >
+    
+    <button 
+      type="submit"
+      class="px-6 py-2 bg-indigo-600 text-white rounded-xl shadow hover:bg-indigo-700 transition"
+    >
+      🔍 Search
+    </button>
+  </form>
+
+  <!-- Profiles Grid -->
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" id="profiles-grid">
+    {% for p in profiles %}
+      <!-- Card with animation + hover -->
+      <div class="profile-card bg-white rounded-2xl shadow-lg p-6 flex flex-col h-full transition duration-300 ease-in-out hover:scale-105 hover:shadow-2xl"
+           data-aos="fade-up" data-aos-duration="700">
+        
+        <!-- Profile Header -->
+        <div class="flex items-center space-x-4">
+          <div class="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-500 
+                      text-white flex items-center justify-center rounded-full text-xl font-bold">
+            {{ p.user.username|slice:":1"|upper }}
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-gray-800">{{ p.user.username }}</h3>
+            <p class="text-sm text-gray-500">📍 {{ p.location|default:"Not added" }}</p>
+          </div>
+        </div>
+
+        <!-- Bio -->
+        <p class="mt-4 text-gray-600 text-sm">
+          {{ p.bio|truncatewords:20 }}
+        </p>
+
+        <!-- Skills Known -->
+        <div class="mt-4">
+          <h4 class="text-sm font-semibold text-indigo-600">✅ Knows:</h4>
+          <div class="flex flex-wrap gap-1">
+            {% for s in p.skills_known.all %}
+              <span class="px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs">
+                {{ s.name }}
+              </span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Skills Wanted -->
+        <div class="mt-2">
+          <h4 class="text-sm font-semibold text-pink-600">🎯 Wants:</h4>
+          <div class="flex flex-wrap gap-1">
+            {% for s in p.skills_wanted.all %}
+              <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs">
+                {{ s.name }}
+              </span>
+            {% endfor %}
+          </div>
+        </div>
+        <!-- Button Section (always at bottom) -->
+        <div class="mt-auto pt-4">
+          <button
+            type="button"
+            class="connect-btn w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition-colors focus:outline-none disabled:opacity-60"
+            data-user-id="{{ p.user.id }}"
+            data-status="{{ p.request_status|default:'none' }}"
+            >
+              {% if p.request_status == "pending" %}
+                ⏳ Pending
+              {% elif p.request_status == "friends" %}
+                ✅ Friends
+              {% elif p.request_status == "incoming" %}
+                📥 Respond
+              {% else %}
+                🤝 Connect
+              {% endif %}
+          </button>
+        </div>
+      </div>
+    {% empty %}
+      <p class="col-span-full text-center text-gray-600">
+        No matching profiles found.
+      </p>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+/* ---------- get CSRF token from cookie ---------- */
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+/* ---------- Notification popup helper ---------- */
+function showNotification(message, title = "Notification") {
+  const popup = document.getElementById("notification-popup");
+
+  if (!popup) {
+    alert((title ? (title + ": ") : "") + message);
+    return;
+  }
+
+  document.getElementById("notif-message").textContent = message;
+  document.getElementById("notif-title").textContent = title;
+  popup.classList.remove("hidden");
+
+  const btn = document.getElementById("notif-btn");
+  if (btn) {
+    btn.onclick = () => {
+      popup.classList.add("hidden");
+    };
+  }
+    // ⏱️ Auto close after 3 seconds
+  setTimeout(() => {
+    if (!popup.classList.contains("hidden")) {
+      popup.classList.add("hidden");
+    }
+  }, 4000);
+}
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.connect-btn').forEach(btn => {
+    btn.addEventListener('click', async function () {
+      const button = this;
+      const userId = button.dataset.userId;
+      let status = button.dataset.status || 'none';
+
+      console.log('Connect button clicked:', { userId, status, csrftoken });
+
+      if (!userId) { 
+        showNotification('Internal error: missing user id', 'Error ❌'); 
+        return;
+      }
+      if (status === 'pending') {
+        showNotification('Request already sent!', 'Info ℹ️');
+        return;
+      }
+      if (status === 'friends') {
+        showNotification('You are already friends!', 'Info ℹ️');
+        return;
+      }
+
+      const oldText = button.textContent;
+      button.disabled = true;
+      button.textContent = 'Sending...';
+
+      try {
+        const res = await fetch(`/api/send-request/${userId}/`, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken || '',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify({})
+        });
+
+        const contentType = res.headers.get('content-type') || '';
+        let data = null;
+
+        if (contentType.includes('application/json')) {
+          data = await res.json();
+        } else {
+          throw new Error(`Server returned non-JSON (status ${res.status}).`);
+        }
+
+        if (res.ok && data.success) {
+          button.dataset.status = 'pending';
+          button.textContent = '⏳ Pending';
+          button.classList.remove('bg-indigo-600');
+          button.classList.add('bg-yellow-500');
+          showNotification('Request sent successfully!', 'Success ✅');
+        } else {
+          const msg = data.message || `Server returned status ${res.status}`;
+          if (msg.toLowerCase().includes('already')) {
+            button.dataset.status = 'pending';
+            button.textContent = '⏳ Pending';
+            button.classList.remove('bg-indigo-600');
+            button.classList.add('bg-yellow-500');
+            showNotification('Request already sent!', 'Info ℹ️');
+          } else {
+            button.textContent = oldText;
+            showNotification(msg, 'Error ❌');
+          }
+        }
+      } catch (err) {
+        console.error('Error sending friend request:', err);
+        showNotification('Something went wrong. Check console for details.', 'Error ❌');
+        button.textContent = oldText;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+});
+
+// ✅ Init AOS
+document.addEventListener('DOMContentLoaded', () => {
+  AOS.init();
+});
+</script>
+{% endblock %}

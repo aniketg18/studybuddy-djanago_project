@@ -1,0 +1,17 @@
+<!-- templates/search.html -->
+<form method="get">
+  <input type="text" name="skill" placeholder="Filter by skill" value="{{ skill_query }}">
+  <input type="text" name="location" placeholder="Filter by location" value="{{ location_query }}">
+  <button type="submit">Search</button>
+</form>
+
+<h2>Results</h2>
+{% if profiles %}
+  <ul>
+    {% for profile in profiles %}
+      <li>{{ profile.user.username }} - {{ profile.skills }} - {{ profile.location }}</li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No matching profile found.</p>
+{% endif %}
